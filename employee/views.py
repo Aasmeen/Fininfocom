@@ -120,7 +120,6 @@ class EmployeeAPIViewSet(ModelViewSet):
         return Response(data=response_data, status=status_code)
 
     def create(self, request, *args, **kwargs):
-        response_data = {}
         try:
             reponse = super().create(request, *args, **kwargs)
             response_data = {
@@ -128,6 +127,7 @@ class EmployeeAPIViewSet(ModelViewSet):
                 "regid": "EMP" + str(reponse.data['id']),
                 "sucess": True
             }
+            status_code = status.HTTP_201_CREATED
         except ValidationError as e:
             for field, error_details in e.detail.items():
                 for error_detail in error_details:
@@ -136,12 +136,14 @@ class EmployeeAPIViewSet(ModelViewSet):
                             "message": "employee already exist",
                             "sucess": False
                         }
+                        status_code = status.HTTP_200_OK
                         break
                     elif error_detail.code == 'required':
                         response_data = {
                             "message": "invalid body request",
                             "sucess": False
                         }
+                        status_code = status.HTTP_400_BAD_REQUEST
                         break
                 if response_data:
                     break
@@ -150,4 +152,5 @@ class EmployeeAPIViewSet(ModelViewSet):
                 "message": "employee created failed",
                 "success": False
             }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return Response(response_data, status=status_code)
